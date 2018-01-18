@@ -7,7 +7,7 @@ import os
 import sys
 
 n_iterations = 2000
-n_max_steps = 5000
+n_max_steps = 15000
 n_games_per_update = 10
 save_iterations = 10
 discount_rate = 0.95
@@ -18,8 +18,8 @@ modelname = "CartPole-model.ckpt"
 gym.envs.register(
     id='CartPole-v2',
     entry_point='gym.envs.classic_control:CartPoleEnv',
-    tags={'wrapper_config.TimeLimit.max_episode_steps': 5000},
-    reward_threshold=4750.0,
+    tags={'wrapper_config.TimeLimit.max_episode_steps': 15000},
+    reward_threshold=14750.0,
 )
 
 n_inputs = 4
@@ -114,8 +114,7 @@ with tf.Session() as sess:
                         break
                 all_rewards.append(current_rewards)
                 all_gradients.append(current_gradients)
-            if iteration % 20 == 0:
-                print("Iteration: {}, Mean Reward = {}".format(iteration, total_rewards.mean()))
+            print("Iteration: {}, Mean Reward = {}".format(iteration, total_rewards.mean()))
 
             all_rewards = discount_and_normalize_rewards(all_rewards, discount_rate=0.95)
             feed_dict = {}
