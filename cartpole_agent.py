@@ -102,8 +102,8 @@ with tf.Session() as sess:
                         break
                 all_rewards.append(current_rewards)
                 all_gradients.append(current_gradients)
-            if iteration % 100 == 0:
-                print("Iteration: {}, Mean Reward = {:.2}".format(iteration, np.concatenate(all_rewards).mean()))
+            if iteration % 20 == 0:
+                print("Iteration: {}, Mean Reward = {}".format(iteration, np.concatenate(all_rewards).mean()))
 
             all_rewards = discount_and_normalize_rewards(all_rewards, discount_rate=0.95)
             feed_dict = {}
