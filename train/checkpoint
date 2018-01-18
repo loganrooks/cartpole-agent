@@ -1,0 +1,2 @@
+model_checkpoint_path: "CartPole-model.ckpt"
+all_model_checkpoint_paths: "CartPole-model.ckpt"

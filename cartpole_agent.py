@@ -15,6 +15,12 @@ discount_rate = 0.95
 logdir = "./train"
 modelname = "CartPole-model.ckpt"
 
+gym.envs.register(
+    id='CartPole-v2',
+    entry_point='gym.envs.classic_control:CartPoleEnv',
+    tags={'wrapper_config.TimeLimit.max_episode_steps': 5000},
+    reward_threshold=4750.0,
+)
 
 n_inputs = 4
 n_hidden = 6
@@ -22,10 +28,12 @@ n_outputs = 1
 initializer = tf.contrib.layers.variance_scaling_initializer()
 
 X = tf.placeholder(tf.float32, shape=[None, n_inputs])
+keep_prob = tf.placeholder(tf.float32)
+
 hidden1 = fully_connected(X, n_hidden, activation_fn=tf.nn.elu, weights_initializer=initializer)
-dropout1 = dropout(hidden1)
+dropout1 = dropout(hidden1, keep_prob=keep_prob)
 hidden2 = fully_connected(dropout1, n_hidden, activation_fn=tf.nn.elu, weights_initializer=initializer)
-dropout2 = dropout(hidden2)
+dropout2 = dropout(hidden2, keep_prob=keep_prob)
 logits = fully_connected(dropout2, n_outputs, activation_fn=None, weights_initializer=initializer)
 outputs = tf.nn.sigmoid(logits)
 
@@ -79,7 +87,7 @@ def discount_and_normalize_rewards(all_rewards, discount_rate):
 
 
 
-env = gym.make('CartPole-v0')
+env = gym.make('CartPole-v2')
 with tf.Session() as sess:
     try:
         saver.restore(sess, "{}/{}".format(logdir, modelname))
@@ -96,7 +104,7 @@ with tf.Session() as sess:
                 total_reward = 0
                 obs = env.reset()
                 for step in range(n_max_steps):
-                    action_val, gradients_val = sess.run([action, gradients], feed_dict = {X: obs.reshape(1, n_inputs)})
+                    action_val, gradients_val = sess.run([action, gradients], feed_dict = {X: obs.reshape(1, n_inputs), keep_prob:1.0})
                     obs, reward, done, info = env.step(action_val[0][0])
                     total_reward += 1
                     current_rewards.append(reward)
