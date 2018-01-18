@@ -89,21 +89,25 @@ with tf.Session() as sess:
         for iteration in range(n_iterations):
             all_rewards = []
             all_gradients = []
+            total_rewards = np.empty(shape=(n_games_per_update,1))
             for game in range(n_games_per_update):
                 current_rewards = []
                 current_gradients = []
+                total_reward = 0
                 obs = env.reset()
                 for step in range(n_max_steps):
                     action_val, gradients_val = sess.run([action, gradients], feed_dict = {X: obs.reshape(1, n_inputs)})
                     obs, reward, done, info = env.step(action_val[0][0])
+                    total_reward += 1
                     current_rewards.append(reward)
                     current_gradients.append(gradients_val)
                     if done:
+                        total_rewards[game] = total_reward
                         break
                 all_rewards.append(current_rewards)
                 all_gradients.append(current_gradients)
             if iteration % 20 == 0:
-                print("Iteration: {}, Mean Reward = {}".format(iteration, np.concatenate(all_rewards).mean()))
+                print("Iteration: {}, Mean Reward = {}".format(iteration, total_rewards.mean()))
 
             all_rewards = discount_and_normalize_rewards(all_rewards, discount_rate=0.95)
             feed_dict = {}
