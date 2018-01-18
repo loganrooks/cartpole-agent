@@ -13,7 +13,7 @@ discount_rate = 0.97
 min_epsilon = 0.05
 epsilon = 0.5
 
-obs_cost_weights = np.array([2, 0, 3, 0])
+obs_cost_weights = np.array([3, 0, 5, 0])
 
 logdir = "./train"
 modelname = "CartPole-model.ckpt"
