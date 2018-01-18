@@ -6,8 +6,8 @@ import gym
 import os
 import sys
 
-n_iterations = 2000
-n_max_steps = 15000
+n_iterations = 21
+n_max_steps = 55000
 n_games_per_update = 10
 save_iterations = 10
 discount_rate = 0.95
@@ -18,8 +18,8 @@ modelname = "CartPole-model.ckpt"
 gym.envs.register(
     id='CartPole-v2',
     entry_point='gym.envs.classic_control:CartPoleEnv',
-    tags={'wrapper_config.TimeLimit.max_episode_steps': 15000},
-    reward_threshold=14750.0,
+    tags={'wrapper_config.TimeLimit.max_episode_steps': 55000},
+    reward_threshold=54750.0,
 )
 
 n_inputs = 4
