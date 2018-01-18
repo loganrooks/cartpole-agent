@@ -125,6 +125,8 @@ with tf.Session() as sess:
                     for game_index, rewards in enumerate(all_rewards)
                     for step, reward in enumerate(rewards)], axis=0)
                 feed_dict[grad_placeholder] = mean_gradients
+                
+            feed_dict[keep_prob] = 0.5
             sess.run(training_op, feed_dict=feed_dict)
             if iteration % save_iterations == 0:
                 saver.save(sess, "{}/{}".format(logdir, modelname))

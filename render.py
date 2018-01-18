@@ -18,6 +18,13 @@ n_inputs = 4
 logdir = "./train"
 modelname = "CartPole-model.ckpt"
 
+gym.envs.register(
+    id='CartPole-v2',
+    entry_point='gym.envs.classic_control:CartPoleEnv',
+    tags={'wrapper_config.TimeLimit.max_episode_steps': 5000},
+    reward_threshold=4750.0,
+)
+
 
 n_inputs = 4
 n_hidden = 6
