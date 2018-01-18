@@ -12,7 +12,7 @@ from tensorflow.contrib.layers import fully_connected, dropout
 import gym
 
 n_games = 100
-n_steps_per_game = 10000
+n_steps_per_game = 15000
 n_inputs = 4
 
 logdir = "./train"
@@ -21,8 +21,8 @@ modelname = "CartPole-model.ckpt"
 gym.envs.register(
     id='CartPole-v2',
     entry_point='gym.envs.classic_control:CartPoleEnv',
-    tags={'wrapper_config.TimeLimit.max_episode_steps': 5000},
-    reward_threshold=4750.0,
+    tags={'wrapper_config.TimeLimit.max_episode_steps': 15000},
+    reward_threshold=14750.0,
 )
 
 
@@ -89,7 +89,7 @@ def discount_and_normalize_rewards(all_rewards, discount_rate):
                                      for discounted_rewards in all_discounted_rewards]
     return normalized_discounted_rewards
 
-env = gym.make('CartPole-v0')
+env = gym.make('CartPole-v2')
 
 
 

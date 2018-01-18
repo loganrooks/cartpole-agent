@@ -3,14 +3,17 @@ import tensorflow as tf
 import numpy as np
 from tensorflow.contrib.layers import fully_connected, dropout
 import gym
-import os
-import sys
 
-n_iterations = 21
-n_max_steps = 55000
+n_iterations = 40
+n_max_steps = 500
 n_games_per_update = 10
 save_iterations = 10
-discount_rate = 0.95
+discount_rate = 0.97
+
+min_epsilon = 0.05
+epsilon = 0.5
+
+obs_cost_weights = np.array([2, 0, 3, 0])
 
 logdir = "./train"
 modelname = "CartPole-model.ckpt"
@@ -18,8 +21,8 @@ modelname = "CartPole-model.ckpt"
 gym.envs.register(
     id='CartPole-v2',
     entry_point='gym.envs.classic_control:CartPoleEnv',
-    tags={'wrapper_config.TimeLimit.max_episode_steps': 55000},
-    reward_threshold=54750.0,
+    tags={'wrapper_config.TimeLimit.max_episode_steps': 300},
+    reward_threshold=275.0,
 )
 
 n_inputs = 4
@@ -66,7 +69,7 @@ training_op = optimizer.apply_gradients(grads_and_vars_feed)
 
 init_op = tf.global_variables_initializer()
 
-saver = tf.train.Saver()
+saver = tf.train.Saver(keep_checkpoint_every_n_hours=2.0)
 
 def discount_rewards(rewards, discount_rate):
     discounted_rewards = np.empty(len(rewards))
@@ -85,7 +88,9 @@ def discount_and_normalize_rewards(all_rewards, discount_rate):
                                      for discounted_rewards in all_discounted_rewards]
     return normalized_discounted_rewards
 
-
+def obs_to_cost(obs, weights):
+    rewards = weights.dot(np.abs(obs))
+    return rewards
 
 env = gym.make('CartPole-v2')
 with tf.Session() as sess:
@@ -105,9 +110,14 @@ with tf.Session() as sess:
                 obs = env.reset()
                 for step in range(n_max_steps):
                     action_val, gradients_val = sess.run([action, gradients], feed_dict = {X: obs.reshape(1, n_inputs), keep_prob:1.0})
-                    obs, reward, done, info = env.step(action_val[0][0])
-                    total_reward += 1
-                    current_rewards.append(reward)
+                    if np.random.uniform() < np.max([min_epsilon, epsilon/(iteration+1)]):
+                        action_val = np.random.binomial(n=1, p=0.5)
+                    else:
+                        action_val = action_val[0][0]
+                    obs, reward, done, info = env.step(action_val)
+                    modified_reward = reward - obs_to_cost(obs, obs_cost_weights)
+                    total_reward += modified_reward
+                    current_rewards.append(modified_reward)
                     current_gradients.append(gradients_val)
                     if done:
                         total_rewards[game] = total_reward
@@ -116,7 +126,7 @@ with tf.Session() as sess:
                 all_gradients.append(current_gradients)
             print("Iteration: {}, Mean Reward = {}".format(iteration, total_rewards.mean()))
 
-            all_rewards = discount_and_normalize_rewards(all_rewards, discount_rate=0.95)
+            all_rewards = discount_and_normalize_rewards(all_rewards, discount_rate=discount_rate)
             feed_dict = {}
             for var_index, grad_placeholder in enumerate(gradients_placeholder):
                 mean_gradients = np.mean(
