@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 import tensorflow as tf
 import numpy as np
-from tensorflow.contrib.layers import fully_connected
+from tensorflow.contrib.layers import fully_connected, dropout
 import gym
 import os
 import sys
 
-n_iterations = 100
+n_iterations = 2000
 n_max_steps = 5000
 n_games_per_update = 10
 save_iterations = 10
@@ -17,13 +17,16 @@ modelname = "CartPole-model.ckpt"
 
 
 n_inputs = 4
-n_hidden = 5
+n_hidden = 6
 n_outputs = 1
 initializer = tf.contrib.layers.variance_scaling_initializer()
 
 X = tf.placeholder(tf.float32, shape=[None, n_inputs])
-hidden = fully_connected(X, n_hidden, activation_fn=tf.nn.elu, weights_initializer=initializer)
-logits = fully_connected(hidden, n_outputs, activation_fn=None, weights_initializer=initializer)
+hidden1 = fully_connected(X, n_hidden, activation_fn=tf.nn.elu, weights_initializer=initializer)
+dropout1 = dropout(hidden1)
+hidden2 = fully_connected(dropout1, n_hidden, activation_fn=tf.nn.elu, weights_initializer=initializer)
+dropout2 = dropout(hidden2)
+logits = fully_connected(dropout2, n_outputs, activation_fn=None, weights_initializer=initializer)
 outputs = tf.nn.sigmoid(logits)
 
 p_left_and_right = tf.concat(axis=1, values=[outputs, 1-outputs])
